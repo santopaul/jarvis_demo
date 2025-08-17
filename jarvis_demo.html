@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My JARVIS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0b0f;
+            color: #d1d5db;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #4f46e5;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background-color: #1a1a2e;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+    <div class="w-full max-w-2xl bg-[#1a1a2e] rounded-3xl shadow-2xl p-6 flex flex-col space-y-6 transform transition-all duration-500 ease-in-out">
+        <!-- Header Section -->
+        <div class="flex items-center space-x-4">
+            <!-- Icon for JARVIS -->
+            <div class="w-12 h-12 flex items-center justify-center rounded-full bg-blue-600 text-white shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h6l-1-1v-3.25M17.5 12h-11a2.5 2.5 0 00-2.5 2.5v1.5a2.5 2.5 0 002.5 2.5h11a2.5 2.5 0 002.5-2.5v-1.5a2.5 2.5 0 00-2.5-2.5z" />
+                </svg>
+            </div>
+            <div class="flex-1">
+                <h1 class="text-3xl font-bold text-white">JARVIS</h1>
+                <p class="text-sm text-blue-300">Operational and ready, sir.</p>
+            </div>
+        </div>
+
+        <!-- Chat History Area -->
+        <div id="chat-history" class="flex-1 overflow-y-auto h-96 bg-[#0f0f1d] rounded-2xl p-4 shadow-inner custom-scrollbar space-y-4">
+            <!-- Messages will be appended here -->
+            <div class="flex justify-start items-start space-x-3">
+                <div class="bg-blue-600/20 text-blue-300 p-3 rounded-tr-2xl rounded-bl-2xl rounded-br-2xl max-w-[80%]">
+                    <p>Greetings, sir. I am ready to begin. Please provide a command.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Section -->
+        <div class="flex flex-col space-y-4">
+            <input type="text" id="user-input" placeholder="Type your command..." class="flex-1 p-3 rounded-2xl bg-[#0f0f1d] text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
+            <div class="flex space-x-2 justify-between">
+                <!-- New buttons to call the Gemini API -->
+                <button id="summarize-btn" class="flex-1 p-3 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 transition-colors duration-200 shadow-md">
+                    ✨ Summarize Medical Term
+                </button>
+                <button id="research-btn" class="flex-1 p-3 bg-purple-600 text-white rounded-2xl hover:bg-purple-700 transition-colors duration-200 shadow-md">
+                    ✨ Generate Research Idea
+                </button>
+                <button id="send-btn" class="p-3 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 transition-colors duration-200 shadow-md">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transform rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get references to the HTML elements
+        const userInput = document.getElementById('user-input');
+        const sendBtn = document.getElementById('send-btn');
+        const summarizeBtn = document.getElementById('summarize-btn');
+        const researchBtn = document.getElementById('research-btn');
+        const chatHistory = document.getElementById('chat-history');
+
+        // Function to add a message to the chat history
+        function addMessage(text, isUser = false) {
+            const messageContainer = document.createElement('div');
+            messageContainer.classList.add('flex', 'space-x-3');
+            
+            const messageBubble = document.createElement('div');
+            messageBubble.classList.add('p-3', 'rounded-2xl', 'max-w-[80%]');
+            
+            const messageText = document.createElement('p');
+            messageText.textContent = text;
+
+            if (isUser) {
+                // Style for user messages
+                messageContainer.classList.add('justify-end');
+                messageBubble.classList.add('bg-blue-500', 'text-white', 'rounded-bl-none');
+            } else {
+                // Style for JARVIS messages
+                messageContainer.classList.add('justify-start');
+                messageBubble.classList.add('bg-blue-600/20', 'text-blue-300', 'rounded-tr-none');
+            }
+            
+            messageBubble.appendChild(messageText);
+            messageContainer.appendChild(messageBubble);
+            chatHistory.appendChild(messageContainer);
+
+            // Scroll to the bottom of the chat history
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+
+        // Function to simulate JARVIS's local responses
+        function getJarvisResponse(message) {
+            const lowerCaseMessage = message.toLowerCase().trim();
+            switch (lowerCaseMessage) {
+                case 'hello jarvis':
+                    return 'Greetings, sir. How may I be of assistance?';
+                case 'how are you?':
+                    return 'My systems are fully operational and my core functions are performing within optimal parameters. Thank you for asking.';
+                case 'what is the weather?':
+                    return 'I am currently unable to access real-time atmospheric data, sir. However, I can confirm that the day is a good one for building.';
+                case 'create':
+                case 'build':
+                    return 'Command acknowledged. Please specify the project parameters.';
+                case 'help':
+                    return 'My current core functions include: "hello jarvis", "how are you?", "what is the weather?", and "create".';
+                default:
+                    return 'I am not equipped to handle that query, sir. Please provide a command I am programmed to understand.';
+            }
+        }
+        
+        // A common function to call the Gemini API with exponential backoff
+        async function callGeminiAPI(prompt, retryCount = 0) {
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }]
+            };
+            
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    if (response.status === 429 && retryCount < 5) {
+                        const delay = Math.pow(2, retryCount) * 1000 + Math.random() * 1000;
+                        await new Promise(res => setTimeout(res, delay));
+                        return callGeminiAPI(prompt, retryCount + 1);
+                    }
+                    throw new Error(`API Error: ${response.statusText}`);
+                }
+                
+                const result = await response.json();
+                const text = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+                if (text) {
+                    return text;
+                } else {
+                    throw new Error('Unexpected API response structure.');
+                }
+            } catch (error) {
+                console.error('Gemini API call failed:', error);
+                return `Error: ${error.message}`;
+            }
+        }
+
+        // Function to summarize a medical term using the Gemini API
+        async function summarizeMedicalTerm() {
+            const medicalTerm = userInput.value.trim();
+            if (medicalTerm === '') {
+                addMessage('Sir, please enter a medical term you would like me to summarize.', false);
+                return;
+            }
+            addMessage(medicalTerm, true);
+            userInput.value = '';
+            
+            const loadingMessage = 'JARVIS: Summarizing medical term...';
+            addMessage(loadingMessage, false);
+
+            const prompt = `Please provide a simple and clear summary of the following medical term, suitable for a medical student to understand:\n\nTerm: ${medicalTerm}`;
+            const result = await callGeminiAPI(prompt);
+
+            // Replace the loading message
+            const messages = chatHistory.querySelectorAll('div.flex');
+            const lastMessage = messages[messages.length - 1];
+            if (lastMessage && lastMessage.querySelector('p').textContent === loadingMessage.replace('JARVIS: ', '')) {
+                lastMessage.remove();
+            }
+
+            addMessage(result, false);
+        }
+
+        // Function to generate research ideas using the Gemini API
+        async function generateResearchIdea() {
+            const keywords = userInput.value.trim();
+            if (keywords === '') {
+                addMessage('Sir, please enter some keywords for which you would like to generate research ideas.', false);
+                return;
+            }
+            addMessage(keywords, true);
+            userInput.value = '';
+            
+            const loadingMessage = 'JARVIS: Generating research ideas...';
+            addMessage(loadingMessage, false);
+
+            const prompt = `Using the following keywords, propose 3 innovative research ideas that combine machine learning and medicine. For each idea, include a brief description and an explanation of why it is important.:\n\nKeywords: ${keywords}`;
+            const result = await callGeminiAPI(prompt);
+
+            // Replace the loading message
+            const messages = chatHistory.querySelectorAll('div.flex');
+            const lastMessage = messages[messages.length - 1];
+            if (lastMessage && lastMessage.querySelector('p').textContent === loadingMessage.replace('JARVIS: ', '')) {
+                lastMessage.remove();
+            }
+
+            addMessage(result, false);
+        }
+
+        // Function to handle sending a standard message
+        function sendMessage() {
+            const userMessage = userInput.value.trim();
+            if (userMessage === '') return;
+            addMessage(userMessage, true);
+            userInput.value = '';
+            setTimeout(() => {
+                const jarvisResponse = getJarvisResponse(userMessage);
+                addMessage(jarvisResponse);
+            }, 1000);
+        }
+
+        // Event listeners
+        sendBtn.addEventListener('click', sendMessage);
+        summarizeBtn.addEventListener('click', summarizeMedicalTerm);
+        researchBtn.addEventListener('click', generateResearchIdea);
+        userInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
